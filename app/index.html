@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset='utf-8' />
     <title></title>
@@ -9,181 +10,243 @@
     <link href='style.css' rel='stylesheet' />
     <script src="https://use.fontawesome.com/ddeecf4cfc.js"></script>
 </head>
+
 <body>
 
-<nav id="menu">
-  <a id='toggle'>
-      <i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>
-      <i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>
-      <i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>
-  </a>
-</nav>
-<div id="map"></div>
+    <nav id="menu">
+        <a id='toggle'>
+            <i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>
+            <i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>
+            <i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>
+        </a>
+    </nav>
+    <div id="map"></div>
 
-<div id='dep-legend' class='legend'>
-    <h4>Average Number of Dependents</h4>
-    <div><span style='background-color: #723122'></span>20,000</div>
-    <div><span style='background-color: #8B4225'></span>18,000</div>
-    <div><span style='background-color: #A25626'></span>16,000</div>
-    <div><span style='background-color: #B86B25'></span>12,000</div>
-    <div><span style='background-color: #CA8323'></span>10,000</div>
-    <div><span style='background-color: #DA9C20'></span>8,000</div>
-    <div><span style='background-color: #E6B71E'></span>6,000</div>
-    <div><span style='background-color: #EED322'></span>4,000</div>
-    <div><span style='background-color: #F2F12D'></span>2,000</div>
-</div>
+    <div id='dep-legend' style="display:none;" class='legend'>
+        <h4>Average Number of Dependents</h4>
+        <div><span style='background-color: #723122'></span>20,000</div>
+        <div><span style='background-color: #8B4225'></span>18,000</div>
+        <div><span style='background-color: #A25626'></span>16,000</div>
+        <div><span style='background-color: #B86B25'></span>12,000</div>
+        <div><span style='background-color: #CA8323'></span>10,000</div>
+        <div><span style='background-color: #DA9C20'></span>8,000</div>
+        <div><span style='background-color: #E6B71E'></span>6,000</div>
+        <div><span style='background-color: #EED322'></span>4,000</div>
+        <div><span style='background-color: #F2F12D'></span>2,000</div>
+    </div>
 
+    <script>
+        mapboxgl.accessToken =
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v9',
+            zoom: 3.7,
+            center: [-96.035422, 37.966787]
+        });
 
-<script>
-  mapboxgl.accessToken = 'pk.eyJ1Ijoia2VubGV5YXJhaSIsImEiOiJjaXR5dzFwZmUwYTU4Mm9xbW9vNm1jYnI4In0.bCIRg12czhSo9veGgWa0Dw';
-  var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/dark-v9',
-      zoom: 3.7,
-      center: [-96.035422, 37.966787]
-  });
+        var hospital_url = 'http://127.0.0.1:5000/hospitals';
 
-  var url = 'http://127.0.0.1:5000/';
+        map.on('load', function () {
 
-  map.on('load', function () {
+            map.addSource('hospitals-cluster-source', {
+                type: 'geojson',
+                data: hospital_url,
+                cluster: true,
+                clusterMaxZoom: 14, // Max zoom to cluster points on
+                clusterRadius: 50
+            });
 
-    window.setInterval(function() {
-        map.getSource('drone').setData(url);
-    }, 60000);
-    
-    map.addSource('drone', { type: 'geojson', data: url });
-    map.addLayer({
-        "id": "drone",
-        "type": "symbol",
-        "source": "drone",
-        "layout": {
-            "icon-image": "rocket-15"
-        }
-    });
-      map.addSource('irs_data', {
-          type: 'vector',
-          url: 'mapbox://kenleyarai.aahcf1dj'
-      });
-      map.addLayer({
-          'id': 'Dependents',
-          'type': 'fill',
-          'source': 'irs_data',
-          'source-layer': 'irs-640dlh',
-          'layout': {
-              'visibility': 'none',
-          },
-          'paint': {
-              'fill-color': {
-                property: '_irs_NUMDE',
-                stops: [
-                    [2000, '#F2F12D'],
-                    [4000, '#EED322'],
-                    [6000, '#E6B71E'],
-                    [8000, '#DA9C20'],
-                    [10000, '#CA8323'],
-                    [12000, '#B86B25'],
-                    [14000, '#A25626'],
-                    [16000, '#8B4225'],
-                    [18000, '#723122']
-                ]
-              },
-              'fill-opacity': 0.75
-          }
-      });
-
-      map.addLayer({
-          'id': 'Gross Income',
-          'type': 'fill',
-          'source': 'irs_data',
-          'source-layer': 'irs-640dlh',
-          'layout': {
-              'visibility': 'none',
-          },
-          'paint': {
-              'fill-color': {
-                property: '_irs_A0010',
-                stops: [
-                    [1200000, '#F2F12D'],
-                    [2400000, '#EED322'],
-                    [3600000, '#E6B71E'],
-                    [4800000, '#DA9C20'],
-                    [6000000, '#CA8323'],
-                    [7200000, '#B86B25'],
-                    [8400000, '#A25626'],
-                    [9600000, '#8B4225'],
-                    [10800000, '#723122']
-                ]
-              },
-              'fill-opacity': .75
-          }
-      });
-  });
-
-  var toggleableLayerIds = ['Dependents', 'Gross Income'];
-
-  for (var i = 0; i < toggleableLayerIds.length; i++) {
-      var id = toggleableLayerIds[i];
-      
-      var link = document.createElement('a');
-      link.href = '#';
-      link.className = 'inactive';
-      link.textContent = id;
-
-      link.onclick = function (e) {
-          var clickedLayer = this.textContent;
-          var legends = document.getElementsByClassName('legend');
-
-          for (var i = 0; i < legends.length; i++){
-            legends[i].style.display = "none";
-          }
-
-          e.preventDefault();
-          e.stopPropagation();
-
-          var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
-
-          if (visibility === 'visible') {
-              map.setLayoutProperty(clickedLayer, 'visibility', 'none');
-              this.className = '';
-          } else {
-              if(clickedLayer === 'Dependents'){
-                  var legend = document.getElementById('dep-legend');legend.style.display = "";
+            map.addLayer({
+                'id': 'Cluster Hospitals',
+                'type': 'symbol',
+                "source": "hospitals-cluster-source",
+                "filter": ["!has", "point_count"],
+                "layout": {
+                    "visibility": 'none',
+                    "icon-image": "marker-15"
                 }
-              this.className = 'active';
-              map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
-          }
-      };
+            });
 
-      var layers = document.getElementById('menu');
-      layers.appendChild(link);
-}
+            var layers = [
+                [150, '#f28cb1'],
+                [20, '#f1f075'],
+                [0, '#51bbd6']
+            ];
 
-document.getElementById( 'toggle' ).addEventListener( 'click', function() {
-    // this refers to the toggle element
-    var menu = document.getElementById( 'menu' );
-    var links = menu.getElementsByTagName('a');
-    var legends = document.getElementsByClassName('legend');
+            layers.forEach(function (layer, i) {
+                map.addLayer({
+                    "id": "hospital-cluster-" + i,
+                    "type": "circle",
+                    "source": "hospitals-cluster-source",
+                    "layout": {
+                        "visibility": 'none'
+                    },
+                    "paint": {
+                        "circle-color": layer[1],
+                        "circle-radius": 18
+                    },
+                    "filter": i === 0 ? [">=", "point_count", layer[0]] : ["all", [">=",
+                            "point_count", layer[0]
+                        ],
+                        ["<", "point_count", layers[i - 1][0]]
+                    ]
+                });
+            });
 
-    if (menu.style.width == '50px' || menu.style.width == '') {
-        menu.style.width = '120px';
-        this.innerHTML = '<i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i><i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i><i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>';
-        for (var i = 1; i < links.length; i++){
-            links[i].style.display = "";
+            map.addLayer({
+                "id": "cluster-count",
+                "type": "symbol",
+                "source": "hospitals-cluster-source",
+                "layout": {
+                    "visibility": 'none',
+                    "text-field": "{point_count}",
+                    "text-font": [
+                        "DIN Offc Pro Medium",
+                        "Arial Unicode MS Bold"
+                    ],
+                    "text-size": 12
+                }
+            });
+            map.addSource('irs_data', {
+                type: 'vector',
+                url: 'mapbox://kenleyarai.aahcf1dj'
+            });
+
+            map.addLayer({
+                'id': 'Dependents',
+                'type': 'fill',
+                'source': 'irs_data',
+                'source-layer': 'irs-640dlh',
+                'layout': {
+                    'visibility': 'none',
+                },
+                'paint': {
+                    'fill-color': {
+                        property: '_irs_NUMDE',
+                        stops: [
+                            [2000, '#F2F12D'],
+                            [4000, '#EED322'],
+                            [6000, '#E6B71E'],
+                            [8000, '#DA9C20'],
+                            [10000, '#CA8323'],
+                            [12000, '#B86B25'],
+                            [14000, '#A25626'],
+                            [16000, '#8B4225'],
+                            [18000, '#723122']
+                        ]
+                    },
+                    'fill-opacity': 0.75
+                }
+            });
+
+            map.addLayer({
+                'id': 'Gross Income',
+                'type': 'fill',
+                'source': 'irs_data',
+                'source-layer': 'irs-640dlh',
+                'layout': {
+                    'visibility': 'none',
+                },
+                'paint': {
+                    'fill-color': {
+                        property: '_irs_A0010',
+                        stops: [
+                            [1200000, '#F2F12D'],
+                            [2400000, '#EED322'],
+                            [3600000, '#E6B71E'],
+                            [4800000, '#DA9C20'],
+                            [6000000, '#CA8323'],
+                            [7200000, '#B86B25'],
+                            [8400000, '#A25626'],
+                            [9600000, '#8B4225'],
+                            [10800000, '#723122']
+                        ]
+                    },
+                    'fill-opacity': .75
+                }
+            });
+        });
+
+        var toggleableLayerIds = ['Dependents', 'Gross Income', 'Cluster Hospitals'];
+
+        for (var i = 0; i < toggleableLayerIds.length; i++) {
+            var id = toggleableLayerIds[i];
+
+            var link = document.createElement('a');
+            link.href = '#';
+            link.className = 'inactive';
+            link.textContent = id;
+
+            link.onclick = function (e) {
+                var clickedLayer = this.textContent;
+                var legends = document.getElementsByClassName('legend');
+
+                for (var i = 0; i < legends.length; i++) {
+                    legends[i].style.display = "none";
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+
+                if (visibility === 'visible') {
+                    map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+                    this.className = '';
+                    if(clickedLayer === 'Cluster Hospitals') {
+                        map.setLayoutProperty("hospital-cluster-0", 'visibility', 'none')
+                        map.setLayoutProperty("hospital-cluster-1", 'visibility', 'none')
+                        map.setLayoutProperty("hospital-cluster-2", 'visibility', 'none')
+                        map.setLayoutProperty("cluster-count", 'visibility', 'none')
+                    }
+                } else {
+                    if (clickedLayer === 'Dependents') {
+                        var legend = document.getElementById('dep-legend');
+                        legend.style.display = "";
+                    } else if(clickedLayer === 'Cluster Hospitals') {
+                        map.setLayoutProperty("hospital-cluster-0", 'visibility', 'visible')
+                        map.setLayoutProperty("hospital-cluster-1", 'visibility', 'visible')
+                        map.setLayoutProperty("hospital-cluster-2", 'visibility', 'visible')
+                        map.setLayoutProperty("cluster-count", 'visibility', 'visible')
+                    }
+
+                    this.className = 'active';
+                    map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+                }
+            };
+
+            var layers = document.getElementById('menu');
+            layers.appendChild(link);
         }
 
-    } else {
-        menu.style.width = '50px';
-        this.innerHTML = '<i class="fa fa-chevron-right fa-2x" aria-hidden="true"></i>'
-        for (var i = 1; i < links.length; i++){
-            links[i].style.display = "none";
-        }
-        for (var i = 0; i < legends.length; i++){
-            legends[i].style.display = "none";
-        }
-    }
+        document.getElementById('toggle').addEventListener('click', function () {
+            // this refers to the toggle element
+            var menu = document.getElementById('menu');
+            var links = menu.getElementsByTagName('a');
+            var legends = document.getElementsByClassName('legend');
 
-}, false );
-</script>
+            if (menu.style.width == '50px' || menu.style.width == '') {
+                menu.style.width = '120px';
+                this.innerHTML =
+                    '<i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i><i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i><i class="fa fa-chevron-left fa-2x" aria-hidden="true"></i>';
+                for (var i = 1; i < links.length; i++) {
+                    links[i].style.display = "";
+                }
+
+            } else {
+                menu.style.width = '50px';
+                this.innerHTML = '<i class="fa fa-chevron-right fa-2x" aria-hidden="true"></i>'
+                for (var i = 1; i < links.length; i++) {
+                    links[i].style.display = "none";
+                }
+                for (var i = 0; i < legends.length; i++) {
+                    legends[i].style.display = "none";
+                }
+            }
+
+        }, false);
+    </script>
 
 </body>
+
 </html>
